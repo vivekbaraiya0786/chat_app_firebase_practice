@@ -1,5 +1,8 @@
+import 'package:firebase_app/utils/firebasestore_helper.dart';
+import 'package:firebase_app/views/screens/login_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:get/get.dart';
 
 class FirebaseAuthHelper {
   FirebaseAuthHelper._();
@@ -8,9 +11,7 @@ class FirebaseAuthHelper {
   static final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   static final GoogleSignIn googleSignIn = GoogleSignIn();
 
-
   //without try catch
-
 
   //todo:signInAnonymously
 
@@ -65,8 +66,6 @@ class FirebaseAuthHelper {
   //   return user;
   // }
 
-
-
   //with try and catch
 
   //todo:signInAnonymously
@@ -90,33 +89,34 @@ class FirebaseAuthHelper {
     return data;
   }
 
-
 //todo:signupWithEmailPassword
-  Future<Map<String, dynamic>> signupWithEmailPassword({required String email,required String password}) async {
-    Map<String, dynamic> data = {};
-
-    try {
-      UserCredential userCredential = await firebaseAuth
-          .createUserWithEmailAndPassword(email: email, password: password);
-      User? user = userCredential.user;
-      data['user'] = user;
-    } on FirebaseAuthException catch (e) {
-      switch (e.code) {
-        case "admin-restricted-operation":
-          data["msg"] = "This service temporary down";
-        case "weak-password":
-          data["msg"] = "Password must be grater than 6 char.";
-        case "email-already-in-use":
-          data["msg"] = "User with this email id is already exists";
-        default:
-          data['msg'] = e.code;
-      }
-    }
-    return data;
-  }
+//   Future<Map<String, dynamic>> signupWithEmailPassword(
+//       {required String email, required String password}) async {
+//     Map<String, dynamic> data = {};
+//
+//     try {
+//       UserCredential userCredential = await firebaseAuth
+//           .createUserWithEmailAndPassword(email: email, password: password);
+//       User? user = userCredential.user;
+//       data['user'] = user;
+//     } on FirebaseAuthException catch (e) {
+//       switch (e.code) {
+//         case "admin-restricted-operation":
+//           data["msg"] = "This service temporary down";
+//         case "weak-password":
+//           data["msg"] = "Password must be grater than 6 char.";
+//         case "email-already-in-use":
+//           data["msg"] = "User with this email id is already exists";
+//         default:
+//           data['msg'] = e.code;
+//       }
+//     }
+//     return data;
+//   }
 
 //todo:signinWithEmailPassword
-  Future<Map<String, dynamic>> signinWithEmailPassword({required String email,required String password}) async {
+  Future<Map<String, dynamic>> signinWithEmailPassword(
+      {required String email, required String password}) async {
     Map<String, dynamic> data = {};
 
     try {
@@ -148,18 +148,18 @@ class FirebaseAuthHelper {
     try {
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
-        final GoogleSignInAuthentication? googleAuth =
-            await googleUser?.authentication;
+      final GoogleSignInAuthentication? googleAuth =
+      await googleUser?.authentication;
 
-        final credential = GoogleAuthProvider.credential(
-          accessToken: googleAuth?.accessToken,
-          idToken: googleAuth?.idToken,
-        );
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth?.accessToken,
+        idToken: googleAuth?.idToken,
+      );
 
-        UserCredential userCredential =
-            await FirebaseAuth.instance.signInWithCredential(credential);
+      UserCredential userCredential =
+      await FirebaseAuth.instance.signInWithCredential(credential);
 
-        User? user = userCredential.user;
+      User? user = userCredential.user;
       data['user'] = user;
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
@@ -172,5 +172,171 @@ class FirebaseAuthHelper {
     return data;
   }
 
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await firebaseAuth.sendPasswordResetEmail(email: email);
+      print('Password reset email sent successfully.');
+    } on FirebaseAuthException catch (e) {
+      print('Error sending password reset email: ${e.code}');
+    }
+  }
+
+  Future<void> updateUserEmail(String newEmail) async {
+    User? user = firebaseAuth.currentUser;
+    if (user != null) {
+      try {
+        await user.updateEmail(newEmail);
+        print('Email updated successfully.');
+      } on FirebaseAuthException catch (e) {
+        print('Error updating email: ${e.code}');
+      }
+    }
+  }
+
+  Future<void> updatePassword(String newPassword) async {
+    User? user = firebaseAuth.currentUser;
+    if (user != null) {
+      try {
+        await user.updatePassword(newPassword);
+        print('password updated successfully.');
+      } on FirebaseAuthException catch (e) {
+        print('Error updating password: ${e.code}');
+      }
+    }
+  }
+
+  // Delete the user account
+  // Future<void> deleteUserAccount() async {
+  //   User? user = FirebaseAuth.instance.currentUser;
+  //
+  //   if (user != null) {
+  //     try {
+  //       await user.delete();
+  //       print('User account deleted successfully.');
+  //     } on FirebaseAuthException catch(e) {
+  //       print('Error deleting user account: ${e.code}');
+  //     }
+  //   }
+  // }
+
+  Future<void> reauthenticateAndDeleteAccount(String email, String password) async {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      try {
+        AuthCredential credential = EmailAuthProvider.credential(email: email, password: password);
+        await user.reauthenticateWithCredential(credential);
+        await user.delete();
+        print('User account deleted successfully.');
+      } on FirebaseAuthException catch (e) {
+        print('Error deleting user account: ${e.code}');
+      }
+    } else {
+      print('No current user. Unable to delete account.');
+    }
+  }
+
+  // Future<void> deleteduseraccount(String email, String password) async {
+  //   try {
+  //     User? user = firebaseAuth.currentUser;
+  //     AuthCredential credential =
+  //     EmailAuthProvider.credential(email: email, password: password);
+  //
+  //     await user?.reauthenticateWithCredential(credential).then((value) {
+  //       value.user?.delete().then((res) {
+  //         Get.offAll(LoginPage());
+  //         Get.snackbar('User account deleted', "Success");
+  //       });
+  //     });
+  //   } catch (error) {
+  //     Get.snackbar(
+  //         'Error', error.toString(), snackPosition: SnackPosition.BOTTOM);
+  //   }
+  // }
+
+
+  Future<void> deleteduseraccount(String email, String password) async {
+    try {
+      User? user = firebaseAuth.currentUser;
+      AuthCredential credential =
+      EmailAuthProvider.credential(email: email, password: password);
+
+      await user?.reauthenticateWithCredential(credential).then((value) {
+        value.user?.delete().then((res) {
+          Get.offAll(LoginPage());
+          Get.snackbar('User account deleted', "Success");
+        });
+      });
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = 'An error occurred while deleting the user account';
+      switch (e.code) {
+        case "no-current-user":
+          errorMessage = "User does not exists with this email id";
+          break;
+        case 'wrong-password':
+          errorMessage = 'Invalid password. Please try again.';
+          break;
+        default:
+          errorMessage = e.code;
+          break;
+      }
+      Get.snackbar(
+        'Error',
+        errorMessage,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+
+
+
+  //login with verification code
+
+  Future<void> createUserWithEmailAndPassword(String email, String password) async {
+    try {
+      UserCredential userCredential = await firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
+
+      await userCredential.user?.sendEmailVerification();
+      print('User account created. Verification email sent to $email');
+    } on FirebaseAuthException catch (e){
+      print('Error creating user: ${e.code}');
+    }
+  }
+
+
+  //day 3
+
+  Future<Map<String, dynamic>> signupWithEmailPassword(
+      {required String email, required String password}) async {
+    Map<String, dynamic> data = {};
+
+    try {
+      UserCredential userCredential = await firebaseAuth
+          .createUserWithEmailAndPassword(email: email, password: password);
+      User? user = userCredential.user;
+      data['user'] = user;
+
+      Map<String,dynamic> userData = {
+        "email" : user!.email,
+        "uid" : user.uid,
+      };
+
+      await FireStoreHelper.fireStoreHelper.insertUserWhileSignIn(data: userData);
+
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case "admin-restricted-operation":
+          data["msg"] = "This service temporary down";
+        case "weak-password":
+          data["msg"] = "Password must be grater than 6 char.";
+        case "email-already-in-use":
+          data["msg"] = "User with this email id is already exists";
+        default:
+          data['msg'] = e.code;
+      }
+    }
+    return data;
+  }
 
 }
