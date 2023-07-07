@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_app/utils/firebasestore_helper.dart';
 import 'package:firebase_app/views/screens/login_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:get/get.dart';
 
@@ -10,6 +12,7 @@ class FirebaseAuthHelper {
   static final FirebaseAuthHelper firebaseAuthHelper = FirebaseAuthHelper._();
   static final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   static final GoogleSignIn googleSignIn = GoogleSignIn();
+  static final _fireStore = FirebaseFirestore.instance;
 
   //without try catch
 
@@ -291,6 +294,99 @@ class FirebaseAuthHelper {
 
 
 
+
+
+
+
+
+
+
+
+
+   Future<bool> signUp(String name, String email, String password) async {
+    try {
+      UserCredential authResult = await firebaseAuth.createUserWithEmailAndPassword(
+          email: email, password: password);
+
+      User? signedInUser = authResult.user;
+
+      if (signedInUser != null) {
+        _fireStore.collection('users').doc(signedInUser.uid).set({
+          'name': name,
+          'email': email,
+          'profilePicture': '',
+          'coverImage': '',
+          'bio': ''
+        });
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
+
+  Future<bool> signUpWithTwitter(String name, String email, String password) async {
+    try {
+      UserCredential authResult;
+
+      if (kIsWeb) {
+        TwitterAuthProvider twitterProvider = TwitterAuthProvider();
+        authResult = await FirebaseAuth.instance.signInWithPopup(twitterProvider);
+      } else {
+
+        AuthCredential twitterAuthCredential = TwitterAuthProvider.credential(
+          accessToken: 'fi30NREWeoAJ38boAGyOmZWwN',
+          secret: 'Mu91aBKrhNkTFzSSytqDveoSCxPM1uJ63loPtLPtu2YxURomM7',
+        );
+
+        authResult = await FirebaseAuth.instance.signInWithCredential(twitterAuthCredential);
+      }
+
+      User? signedInUser = authResult.user;
+
+      if (signedInUser != null) {
+        await _fireStore.collection('users').doc(signedInUser.uid).set({
+          'name': signedInUser.displayName,
+          'email': signedInUser.email,
+          'profilePicture': signedInUser.photoURL ?? '',
+          'coverImage': '',
+          'bio': '',
+        });
+
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
+
+  static Future<bool> login(String email, String password) async {
+    try {
+      await firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
+      return true;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
+  static void logout() {
+    try {
+      firebaseAuth.signOut();
+    } catch (e) {
+      print(e);
+    }
+  }
+
+
   //login with verification code
 
   Future<void> createUserWithEmailAndPassword(String email, String password) async {
@@ -298,6 +394,7 @@ class FirebaseAuthHelper {
       UserCredential userCredential = await firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
 
       await userCredential.user?.sendEmailVerification();
+
       print('User account created. Verification email sent to $email');
     } on FirebaseAuthException catch (e){
       print('Error creating user: ${e.code}');
@@ -307,8 +404,7 @@ class FirebaseAuthHelper {
 
   //day 3
 
-  Future<Map<String, dynamic>> signupWithEmailPassword(
-      {required String email, required String password}) async {
+  Future<Map<String, dynamic>> signupWithEmailPassword({required String email, required String password}) async {
     Map<String, dynamic> data = {};
 
     try {

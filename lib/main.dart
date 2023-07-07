@@ -1,5 +1,10 @@
+import 'package:firebase_app/views/phone_otp_auth/login_screen.dart';
+import 'package:firebase_app/views/phone_otp_auth/otp_screen.dart';
 import 'package:firebase_app/views/screens/HomePage.dart';
+import 'package:firebase_app/views/screens/chat_page.dart';
 import 'package:firebase_app/views/screens/login_page.dart';
+import 'package:firebase_app/views/twitter/login_screen.dart';
+import 'package:firebase_app/views/twitter/register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -17,6 +22,7 @@ void main() async {
       darkTheme: ThemeData.dark(),
       themeMode: ThemeMode.system,
       debugShowCheckedModeBanner: false,
+      initialRoute: "/",
       getPages: [
         GetPage(
           name: '/',
@@ -37,6 +43,26 @@ void main() async {
         GetPage(
           name: '/deleteAccount',
           page: () => const deleteAccount(),
+        ),
+        GetPage(
+          name: '/register-screen',
+          page: () =>  const TwitterRegistrationScreen(),
+        ),
+        GetPage(
+          name: '/TwitterLoginScreen',
+          page: () =>  const TwitterLoginScreen(),
+        ),
+        GetPage(
+          name: '/LoginScreen',
+          page: () =>  const LoginScreen(),
+        ),
+        GetPage(
+          name: '/OtpScreen',
+          page: () =>  OtpScreen(phone: '', codeDigit: '',),
+        ),
+        GetPage(
+          name: '/chat_page',
+          page: () =>  const chat_page(),
         ),
       ],
     ),

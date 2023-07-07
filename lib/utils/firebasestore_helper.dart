@@ -42,7 +42,7 @@ class FireStoreHelper {
   Future<void> insertUserWhileSignIn(
       {required Map<String, dynamic> data}) async {
     DocumentSnapshot<Map<String, dynamic>> docSnapshot =
-        await db.collection("records").doc("users").get();
+    await db.collection("records").doc("users").get();
 
     Map<String, dynamic> res = docSnapshot.data() as Map<String, dynamic>;
 
@@ -65,8 +65,16 @@ class FireStoreHelper {
   //todo:display all user
   displayAllUser() {
     Stream<QuerySnapshot<Map<String, dynamic>>> userStream =
-        db.collection("users").snapshots();
+    db.collection("users").snapshots();
 
     return userStream;
+  }
+
+  Future<void> sendChatMessage({required String msg,required String id})async{
+    await db.collection("users").doc(id).collection("chat").add({"message": msg,"timestamp": FieldValue.serverTimestamp()});
+  }
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> getMessages({required String id}){
+   return  db.collection("users").doc(id).collection("chat").snapshots();
   }
 }

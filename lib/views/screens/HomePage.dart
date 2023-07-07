@@ -40,7 +40,7 @@ class _HomePageState extends State<HomePage> {
     if (user != null) {
       isAnonymous = user.isAnonymous;
       isEmailPassword = user.providerData.any((userInfo) =>
-          userInfo.providerId == 'password' || userInfo.providerId == 'email');
+      userInfo.providerId == 'password' || userInfo.providerId == 'email');
     }
   }
 
@@ -112,130 +112,133 @@ class _HomePageState extends State<HomePage> {
     User? user = ModalRoute.of(context)!.settings.arguments as User?;
 
     return Scaffold(
-      drawer: Drawer(
-        child: Column(
-          children: [
-            SizedBox(
-              height: Get.height * 0.08,
-            ),
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  chooseImage();
-                });
-              },
-              child: Stack(
-                alignment: Alignment.bottomRight,
-                children: [
-                  CircleAvatar(
-                    radius: 60,
-                    backgroundImage: image != null
-                        ? FileImage(image!)
-                        : (user?.photoURL != null
-                            ? NetworkImage(user!.photoURL!) as ImageProvider
-                            : const AssetImage('assets/images/1.jpeg')),
-                  ),
-                  if (isAnonymous || isEmailPassword)
-                    GestureDetector(
-                      onTap: handleAdd,
-                      child: const CircleAvatar(
-                        backgroundColor: Colors.white,
-                        radius: 16,
-                        child: Icon(Icons.add, color: Colors.black),
-                      ),
+        drawer: Drawer(
+          child: Column(
+            children: [
+              SizedBox(
+                height: Get.height * 0.08,
+              ),
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    chooseImage();
+                  });
+                },
+                child: Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    CircleAvatar(
+                      radius: 60,
+                      backgroundImage: image != null
+                          ? FileImage(image!)
+                          : (user?.photoURL != null
+                          ? NetworkImage(user!.photoURL!) as ImageProvider
+                          : const AssetImage('assets/images/1.jpeg')),
                     ),
-                ],
+                    if (isAnonymous || isEmailPassword)
+                      GestureDetector(
+                        onTap: handleAdd,
+                        child: const CircleAvatar(
+                          backgroundColor: Colors.white,
+                          radius: 16,
+                          child: Icon(Icons.add, color: Colors.black),
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-            const Divider(
-              color: Colors.black,
-            ),
-            SizedBox(
-              height: Get.height * 0.02,
-            ),
-            (user!.isAnonymous)
-                ? const Text("")
-                : (user.displayName == null)
-                    ? const Text("")
-                    : Text("UserName : ${user.displayName}"),
-            SizedBox(
-              height: Get.height * 0.02,
-            ),
-            (user.isAnonymous) ? const Text("") : Text("Email : ${user.email}"),
-            SizedBox(
-              height: Get.height * 0.02,
-            ),
-            ListTile(
-              onTap: () {
-                Get.toNamed("/update_Email");
-              },
-              title: const Text("Update your Email"),
-              trailing: const Icon(Icons.email_outlined),
-            ),
-            ListTile(
-              onTap: () {
-                Get.toNamed("/update_Password");
-              },
-              title: const Text("Update your password"),
-              trailing: const Icon(Icons.password_outlined),
-            ),
-            ListTile(
-              onTap: () {
-                Get.toNamed("/deleteAccount");
-              },
-              title: const Text('Delete your Account'),
-              trailing: const Icon(Icons.delete),
-            ),
-            if (isAnonymous || isEmailPassword)
+              const Divider(
+                color: Colors.black,
+              ),
+              SizedBox(
+                height: Get.height * 0.02,
+              ),
+              (user!.isAnonymous)
+                  ? const Text("")
+                  : (user.displayName == null)
+                  ? const Text("")
+                  : Text("UserName : ${user.displayName}"),
+              SizedBox(
+                height: Get.height * 0.02,
+              ),
+              (user.isAnonymous) ? const Text("") : Text("Email : ${user.email}"),
+              SizedBox(
+                height: Get.height * 0.02,
+              ),
               ListTile(
-                onTap: handleEdit,
-                leading: const Icon(Icons.edit),
-                title: const Text('Edit'),
+                onTap: () {
+                  Get.toNamed("/update_Email");
+                },
+                title: const Text("Update your Email"),
+                trailing: const Icon(Icons.email_outlined),
               ),
-            if (isAnonymous || isEmailPassword)
               ListTile(
-                onTap: handleDelete,
-                leading: const Icon(Icons.delete),
-                title: const Text('Delete'),
+                onTap: () {
+                  Get.toNamed("/update_Password");
+                },
+                title: const Text("Update your password"),
+                trailing: const Icon(Icons.password_outlined),
               ),
+              ListTile(
+                onTap: () {
+                  Get.toNamed("/deleteAccount");
+                },
+                title: const Text('Delete your Account'),
+                trailing: const Icon(Icons.delete),
+              ),
+              if (isAnonymous || isEmailPassword)
+                ListTile(
+                  onTap: handleEdit,
+                  leading: const Icon(Icons.edit),
+                  title: const Text('Edit'),
+                ),
+              if (isAnonymous || isEmailPassword)
+                ListTile(
+                  onTap: handleDelete,
+                  leading: const Icon(Icons.delete),
+                  title: const Text('Delete'),
+                ),
+            ],
+          ),
+        ),
+        appBar: AppBar(
+          actions: [
+            IconButton(
+              onPressed: () {
+                signOut();
+              },
+              icon: const Icon(CupertinoIcons.power),
+            ),
           ],
         ),
-      ),
-      appBar: AppBar(
-        actions: [
-          IconButton(
-            onPressed: () {
-              signOut();
-            },
-            icon: const Icon(CupertinoIcons.power),
-          ),
-        ],
-      ),
-      body: StreamBuilder(
-        // stream: FireStoreHelper.fireStoreHelper.displayAllUser(),
-        stream: FirebaseFirestore.instance.collection("users").snapshots(),
-         builder: (context, snapshot) {
+        body: StreamBuilder(
+          // stream: FireStoreHelper.fireStoreHelper.displayAllUser(),
+          stream: FirebaseFirestore.instance.collection("users").snapshots(),
+          builder: (context, snapshot) {
 
-           if(snapshot.hasError){
-             return Center(child: Text("${snapshot.error}"),);
-           }else if(snapshot.hasData){
+            if(snapshot.hasError){
+              return Center(child: Text("${snapshot.error}"),);
+            }else if(snapshot.hasData){
 
-             QuerySnapshot<Map<String, dynamic>> data  = snapshot.data as QuerySnapshot<Map<String, dynamic>>;
-             List<QueryDocumentSnapshot<Map<String, dynamic>>> alldocs =  data.docs;
+              QuerySnapshot<Map<String, dynamic>> data  = snapshot.data as QuerySnapshot<Map<String, dynamic>>;
+              List<QueryDocumentSnapshot<Map<String, dynamic>>> allDocs =  data.docs;
 
-             return ListView.builder(itemCount: alldocs.length,itemBuilder: (context, index) {
-               return ListTile(
-                 leading: Text("${index +1}"),
-                 title:Text("${alldocs[index].data()['email']}") ,
-                 subtitle: Text("${alldocs[index].data()['uid']}"),
-               );
-             },);
+              return ListView.builder(itemCount: allDocs.length,itemBuilder: (context, index) {
+                return ListTile(
+                  onTap: () {
+                    Navigator.of(context).pushNamed("/chat_page",arguments: allDocs[index]);
+                  },
+                  leading: Text("${index +1}"),
+                  title:Text("${allDocs[index].data()['email']}") ,
+                  subtitle: Text("${allDocs[index].data()['uid']}"),
+                );
+              },);
 
-           }
+            }
 
-           return Center(child: CircularProgressIndicator(),);
-         },
-      )
+            return Center(child: CircularProgressIndicator(),);
+          },
+        )
     );
   }
 
