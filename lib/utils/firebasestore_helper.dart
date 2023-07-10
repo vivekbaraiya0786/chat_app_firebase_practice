@@ -69,6 +69,7 @@ class FireStoreHelper {
 
     return userStream;
   }
+<<<<<<< HEAD
 
   Future<void> sendChatMessage({required String msg,required String id})async{
     await db.collection("users").doc(id).collection("chat").add({"message": msg,"timestamp": FieldValue.serverTimestamp()});
@@ -77,4 +78,6 @@ class FireStoreHelper {
   Stream<QuerySnapshot<Map<String, dynamic>>> getMessages({required String id}){
    return  db.collection("users").doc(id).collection("chat").snapshots();
   }
+=======
+>>>>>>> origin/master
 }

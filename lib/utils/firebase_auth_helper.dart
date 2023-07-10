@@ -268,6 +268,7 @@ class FirebaseAuthHelper {
         value.user?.delete().then((res) {
           Get.offAll(LoginPage());
           Get.snackbar('User account deleted', "Success");
+<<<<<<< HEAD
         });
       });
     } on FirebaseAuthException catch (e) {
@@ -317,6 +318,8 @@ class FirebaseAuthHelper {
           'profilePicture': '',
           'coverImage': '',
           'bio': ''
+=======
+>>>>>>> origin/master
         });
         return true;
       }
