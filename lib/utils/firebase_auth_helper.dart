@@ -268,7 +268,6 @@ class FirebaseAuthHelper {
         value.user?.delete().then((res) {
           Get.offAll(LoginPage());
           Get.snackbar('User account deleted', "Success");
-<<<<<<< HEAD
         });
       });
     } on FirebaseAuthException catch (e) {
@@ -304,7 +303,7 @@ class FirebaseAuthHelper {
 
 
 
-   Future<bool> signUp(String name, String email, String password) async {
+  Future<bool> signUp(String name, String email, String password) async {
     try {
       UserCredential authResult = await firebaseAuth.createUserWithEmailAndPassword(
           email: email, password: password);
@@ -318,8 +317,6 @@ class FirebaseAuthHelper {
           'profilePicture': '',
           'coverImage': '',
           'bio': ''
-=======
->>>>>>> origin/master
         });
         return true;
       }

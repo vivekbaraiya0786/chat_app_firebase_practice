@@ -221,7 +221,6 @@ class _HomePageState extends State<HomePage> {
             }else if(snapshot.hasData){
 
               QuerySnapshot<Map<String, dynamic>> data  = snapshot.data as QuerySnapshot<Map<String, dynamic>>;
-<<<<<<< HEAD
               List<QueryDocumentSnapshot<Map<String, dynamic>>> allDocs =  data.docs;
 
               return ListView.builder(itemCount: allDocs.length,itemBuilder: (context, index) {
@@ -232,15 +231,6 @@ class _HomePageState extends State<HomePage> {
                   leading: Text("${index +1}"),
                   title:Text("${allDocs[index].data()['email']}") ,
                   subtitle: Text("${allDocs[index].data()['uid']}"),
-=======
-              List<QueryDocumentSnapshot<Map<String, dynamic>>> alldocs =  data.docs;
-
-              return ListView.builder(itemCount: alldocs.length,itemBuilder: (context, index) {
-                return ListTile(
-                  leading: Text("${index +1}"),
-                  title:Text("${alldocs[index].data()['email']}") ,
-                  subtitle: Text("${alldocs[index].data()['uid']}"),
->>>>>>> origin/master
                 );
               },);
 
