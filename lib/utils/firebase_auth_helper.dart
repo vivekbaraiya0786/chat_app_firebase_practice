@@ -435,4 +435,9 @@ class FirebaseAuthHelper {
     return data;
   }
 
+
+  deleteUser()async{
+    await firebaseAuth.currentUser!.delete();
+  }
+
 }

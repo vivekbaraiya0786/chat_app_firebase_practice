@@ -7,7 +7,7 @@ class FireStoreHelper {
 
   static final FirebaseFirestore db = FirebaseFirestore.instance;
 
-  //todo:insert user while sign in
+  //todo:insert user while sign in*
 
   // Future<void> insertUserWhileSignIn({required Map<String,dynamic>  data}) async {
   //   DocumentReference  docref= await db.collection("users").add(data);
@@ -75,6 +75,14 @@ class FireStoreHelper {
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> getMessages({required String id}){
-   return  db.collection("users").doc(id).collection("chat").snapshots();
+   return  db.collection("users").doc(id).collection("chat").orderBy("timestamp",descending: true).snapshots();
+  }
+
+  Future<void> deleteUser({required String id})async{
+    await db.collection("users").doc(id).delete();
+  }
+
+  Future<void> updateUser({required String id,required String email})async{
+    await db.collection("users").doc(id).update({"email": email});
   }
 }

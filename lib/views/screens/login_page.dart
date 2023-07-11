@@ -11,7 +11,31 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver{
+  
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+  
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // TODO: implement didChangeAppLifecycleState
+    super.didChangeAppLifecycleState(state);
+    print("===============");
+    print(state);
+    print("===============");
+  }
+  
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+  }
+  
+  
   final GlobalKey<FormState> signinKey = GlobalKey<FormState>();
   final GlobalKey<FormState> signupKey = GlobalKey<FormState>();
   final GlobalKey<FormState> forgotPassWordkey = GlobalKey<FormState>();

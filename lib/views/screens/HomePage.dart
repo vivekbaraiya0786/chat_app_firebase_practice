@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_app/utils/firebase_auth_helper.dart';
+import 'package:firebase_app/utils/firebasestore_helper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -40,7 +41,7 @@ class _HomePageState extends State<HomePage> {
     if (user != null) {
       isAnonymous = user.isAnonymous;
       isEmailPassword = user.providerData.any((userInfo) =>
-      userInfo.providerId == 'password' || userInfo.providerId == 'email');
+          userInfo.providerId == 'password' || userInfo.providerId == 'email');
     }
   }
 
@@ -56,15 +57,13 @@ class _HomePageState extends State<HomePage> {
 
   void handleEdit() {
     if (isAnonymous || isEmailPassword) {
-      setState(() {
-
-      });
+      setState(() {});
     } else {
       print('Edit functionality not available');
     }
   }
 
-  void  handleDelete() {
+  void handleDelete() {
     if (isAnonymous || isEmailPassword) {
       setState(() {
         image = null;
@@ -83,7 +82,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void chooseImage(){
+  void chooseImage() {
     Get.dialog(
       AlertDialog(
         title: const Text('Select Image Source'),
@@ -132,8 +131,8 @@ class _HomePageState extends State<HomePage> {
                       backgroundImage: image != null
                           ? FileImage(image!)
                           : (user?.photoURL != null
-                          ? NetworkImage(user!.photoURL!) as ImageProvider
-                          : const AssetImage('assets/images/1.jpeg')),
+                              ? NetworkImage(user!.photoURL!) as ImageProvider
+                              : const AssetImage('assets/images/1.jpeg')),
                     ),
                     if (isAnonymous || isEmailPassword)
                       GestureDetector(
@@ -156,12 +155,14 @@ class _HomePageState extends State<HomePage> {
               (user!.isAnonymous)
                   ? const Text("")
                   : (user.displayName == null)
-                  ? const Text("")
-                  : Text("UserName : ${user.displayName}"),
+                      ? const Text("")
+                      : Text("UserName : ${user.displayName}"),
               SizedBox(
                 height: Get.height * 0.02,
               ),
-              (user.isAnonymous) ? const Text("") : Text("Email : ${user.email}"),
+              (user.isAnonymous)
+                  ? const Text("")
+                  : Text("Email : ${user.email}"),
               SizedBox(
                 height: Get.height * 0.02,
               ),
@@ -210,36 +211,64 @@ class _HomePageState extends State<HomePage> {
               icon: const Icon(CupertinoIcons.power),
             ),
           ],
-        ),
+        ), // stream: FireStoreHelper.fireStoreHelper.displayAllUser(),
         body: StreamBuilder(
-          // stream: FireStoreHelper.fireStoreHelper.displayAllUser(),
           stream: FirebaseFirestore.instance.collection("users").snapshots(),
           builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return Center(
+                child: Text("${snapshot.error}"),
+              );
+            } else if (snapshot.hasData) {
+              QuerySnapshot<Map<String, dynamic>> data =
+                  snapshot.data as QuerySnapshot<Map<String, dynamic>>;
+              List<QueryDocumentSnapshot<Map<String, dynamic>>> allDocs =
+                  data.docs;
 
-            if(snapshot.hasError){
-              return Center(child: Text("${snapshot.error}"),);
-            }else if(snapshot.hasData){
+              return ListView.builder(
+                itemCount: allDocs.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    onTap: () {
+                      Navigator.of(context)
+                          .pushNamed("/chat_page", arguments: allDocs[index]);
+                    },
+                    leading: Text("${index + 1}"),
+                    title: Text("${allDocs[index].data()['email']}"),
+                    subtitle: Text("${allDocs[index].data()['uid']}"),
+                    trailing: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
 
-              QuerySnapshot<Map<String, dynamic>> data  = snapshot.data as QuerySnapshot<Map<String, dynamic>>;
-              List<QueryDocumentSnapshot<Map<String, dynamic>>> allDocs =  data.docs;
-
-              return ListView.builder(itemCount: allDocs.length,itemBuilder: (context, index) {
-                return ListTile(
-                  onTap: () {
-                    Navigator.of(context).pushNamed("/chat_page",arguments: allDocs[index]);
-                  },
-                  leading: Text("${index +1}"),
-                  title:Text("${allDocs[index].data()['email']}") ,
-                  subtitle: Text("${allDocs[index].data()['uid']}"),
-                );
-              },);
-
+                        IconButton(
+                          onPressed: () async{
+                            await FireStoreHelper.fireStoreHelper.deleteUser(id: allDocs[index].id);
+                          },
+                          icon: Icon(
+                            Icons.delete,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () async{
+                            await FireStoreHelper.fireStoreHelper.updateUser(id: allDocs[index].id, email: 'Vivek Baraiya');
+                          },
+                          icon: Icon(
+                            Icons.edit,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
             }
 
-            return Center(child: CircularProgressIndicator(),);
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           },
-        )
-    );
+        ));
   }
 
   Future<void> signOut() async {

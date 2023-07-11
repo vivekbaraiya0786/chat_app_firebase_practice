@@ -43,10 +43,14 @@ class _chat_pageState extends State<chat_page> {
                       reverse: true,
                       itemCount: allDocs.length,
                       itemBuilder: (context, index) {
-                        return  ListTile(
-                          title: Text("${allDocs[index].data()['message']}"),
-                          subtitle: Text("${allDocs[index].data()['timestamp']}"),
-                        );
+                        return Chip(label: Column(
+                          children: [Text("${allDocs[index].data()['message']}"),
+                          ],
+                        ));
+                        //   ListTile(
+                        //   title: Text("${allDocs[index].data()['message']}"),
+                        //   subtitle: Text("${allDocs[index].data()['timestamp']}"),
+                        // );
                       },
                     );
                   }
@@ -83,7 +87,7 @@ class _chat_pageState extends State<chat_page> {
                     messageController.clear();
                   },
                   icon: const Icon(Icons.send),
-                ))
+                ),),
               ],
             ),
           ),),
