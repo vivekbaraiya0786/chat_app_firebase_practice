@@ -3,6 +3,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+
+import '../../utils/fcm_helper.dart';
+import '../../utils/local_notification_helper.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -11,14 +18,37 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver{
-  
+class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+
+    FCMHelper.fcmHelper.fetchFCMToken();
     WidgetsBinding.instance.addObserver(this);
+
+
+
+    AndroidInitializationSettings androidInitializationSettings =
+        const AndroidInitializationSettings("mipmap/ic_launcher");
+    DarwinInitializationSettings arwinInitializationSettings =
+        const DarwinInitializationSettings();
+
+    var initializationSettings = InitializationSettings(
+      android: androidInitializationSettings,
+      iOS: arwinInitializationSettings,
+    );
+
+    tz.initializeTimeZones();
+    LocalNotificationHelper.flutterLocalNotificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        print("============");
+        print("PLAYLOAD : ${response.payload}");
+        print("============");
+      },
+    );
   }
-  
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // TODO: implement didChangeAppLifecycleState
@@ -27,15 +57,14 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver{
     print(state);
     print("===============");
   }
-  
+
   @override
   void dispose() {
     // TODO: implement dispose
     super.dispose();
     WidgetsBinding.instance.removeObserver(this);
   }
-  
-  
+
   final GlobalKey<FormState> signinKey = GlobalKey<FormState>();
   final GlobalKey<FormState> signupKey = GlobalKey<FormState>();
   final GlobalKey<FormState> forgotPassWordkey = GlobalKey<FormState>();
@@ -45,13 +74,13 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver{
   final TextEditingController PasswordController = TextEditingController();
 
   final TextEditingController signupUserNameController =
-  TextEditingController();
+      TextEditingController();
   final TextEditingController signupEmailController = TextEditingController();
   final TextEditingController signupPasswordController =
-  TextEditingController();
+      TextEditingController();
 
   final TextEditingController forgotPasswordController =
-  TextEditingController();
+      TextEditingController();
 
   String? Email;
   String? Password;
@@ -64,9 +93,9 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver{
 
   final verificationkey = GlobalKey<FormState>();
   final TextEditingController _verificationemailController =
-  TextEditingController();
+      TextEditingController();
   final TextEditingController _verificationpasswordController =
-  TextEditingController();
+      TextEditingController();
   String? email;
   String? password;
 
@@ -288,7 +317,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver{
                                           shape: MaterialStatePropertyAll(
                                             RoundedRectangleBorder(
                                               borderRadius:
-                                              BorderRadius.circular(15),
+                                                  BorderRadius.circular(15),
                                             ),
                                           ),
                                         ),
@@ -305,15 +334,19 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver{
                                             ),
                                           ],
                                           borderRadius:
-                                          BorderRadius.circular(15),
+                                              BorderRadius.circular(15),
                                         ),
                                         child: OutlinedButton(
                                           style: ButtonStyle(
-                                            backgroundColor: MaterialStateProperty.all(Colors.blueAccent),
+                                            backgroundColor:
+                                                MaterialStateProperty.all(
+                                                    Colors.blueAccent),
                                           ),
                                           onPressed: () async {
-                                            if (signinKey.currentState != null) {
-                                              if (signinKey.currentState!.validate()) {
+                                            if (signinKey.currentState !=
+                                                null) {
+                                              if (signinKey.currentState!
+                                                  .validate()) {
                                                 signinKey.currentState!.save();
                                               }
                                               LoginWithEmailPassword0();
@@ -323,10 +356,9 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver{
                                           child: const Text(
                                             "Login",
                                             style:
-                                            TextStyle(color: Colors.white),
+                                                TextStyle(color: Colors.white),
                                           ),
                                         ),
-
                                       ),
                                     ),
                                   ),
@@ -393,9 +425,9 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver{
 
                                   onTap: () async {
                                     Map<String, dynamic> data =
-                                    await FirebaseAuthHelper
-                                        .firebaseAuthHelper
-                                        .signInWithGoogle();
+                                        await FirebaseAuthHelper
+                                            .firebaseAuthHelper
+                                            .signInWithGoogle();
 
                                     if (data['user'] != null) {
                                       Get.snackbar(
@@ -453,9 +485,9 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver{
 
                                   onTap: () async {
                                     Map<String, dynamic> data =
-                                    await FirebaseAuthHelper
-                                        .firebaseAuthHelper
-                                        .signInAnonymously();
+                                        await FirebaseAuthHelper
+                                            .firebaseAuthHelper
+                                            .signInAnonymously();
                                     if (data['user'] != null) {
                                       Get.snackbar(
                                         'Successfully',
@@ -497,6 +529,28 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver{
                                   ),
                                 ),
                               ],
+                            ),
+                            SizedBox(
+                              height: Get.height * 0.05,
+                            ),
+                            ElevatedButton(
+                              onPressed: () async{
+                               await LocalNotificationHelper.localNotificationHelper.showSimpleLocalPushNotification();
+                              },
+                              child: const Text(
+                                "Simple Notification",
+                              ),
+                            ),
+                            SizedBox(
+                              height: Get.height * 0.05,
+                            ),
+                            ElevatedButton(
+                              onPressed: () async{
+                                await LocalNotificationHelper.localNotificationHelper.showScheduledLocalPushNotification();
+                              },
+                              child: const Text(
+                                "Scheduled Notification",
+                              ),
                             ),
                           ],
                         ),
@@ -704,7 +758,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver{
                                           shape: MaterialStatePropertyAll(
                                             RoundedRectangleBorder(
                                               borderRadius:
-                                              BorderRadius.circular(15),
+                                                  BorderRadius.circular(15),
                                             ),
                                           ),
                                         ),
@@ -721,13 +775,13 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver{
                                             ),
                                           ],
                                           borderRadius:
-                                          BorderRadius.circular(15),
+                                              BorderRadius.circular(15),
                                         ),
                                         child: OutlinedButton(
                                           style: ButtonStyle(
                                             backgroundColor:
-                                            MaterialStateProperty.all(
-                                                Colors.blueAccent),
+                                                MaterialStateProperty.all(
+                                                    Colors.blueAccent),
                                           ),
                                           onPressed: () {
                                             if (signupKey.currentState!
@@ -739,7 +793,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver{
                                           child: const Text(
                                             "Sign Up",
                                             style:
-                                            TextStyle(color: Colors.white),
+                                                TextStyle(color: Colors.white),
                                           ),
                                         ),
                                       ),
@@ -904,7 +958,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver{
                                           shape: MaterialStatePropertyAll(
                                             RoundedRectangleBorder(
                                               borderRadius:
-                                              BorderRadius.circular(15),
+                                                  BorderRadius.circular(15),
                                             ),
                                           ),
                                         ),
@@ -921,13 +975,13 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver{
                                             ),
                                           ],
                                           borderRadius:
-                                          BorderRadius.circular(15),
+                                              BorderRadius.circular(15),
                                         ),
                                         child: OutlinedButton(
                                           style: ButtonStyle(
                                             backgroundColor:
-                                            MaterialStateProperty.all(
-                                                Colors.blueAccent),
+                                                MaterialStateProperty.all(
+                                                    Colors.blueAccent),
                                           ),
                                           onPressed: () {
                                             if (forgotPassWordkey.currentState!
@@ -940,7 +994,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver{
                                           child: const Text(
                                             "Send Instruction",
                                             style:
-                                            TextStyle(color: Colors.white),
+                                                TextStyle(color: Colors.white),
                                           ),
                                         ),
                                       ),
@@ -1117,7 +1171,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver{
                                           shape: MaterialStatePropertyAll(
                                             RoundedRectangleBorder(
                                               borderRadius:
-                                              BorderRadius.circular(15),
+                                                  BorderRadius.circular(15),
                                             ),
                                           ),
                                         ),
@@ -1134,25 +1188,28 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver{
                                             ),
                                           ],
                                           borderRadius:
-                                          BorderRadius.circular(15),
+                                              BorderRadius.circular(15),
                                         ),
                                         child: OutlinedButton(
                                           style: ButtonStyle(
                                             backgroundColor:
-                                            MaterialStateProperty.all(
-                                                Colors.blueAccent),
+                                                MaterialStateProperty.all(
+                                                    Colors.blueAccent),
                                           ),
                                           onPressed: () async {
                                             if (verificationkey.currentState!
                                                 .validate()) {
-                                              verificationkey.currentState!.save();
-                                              FirebaseAuthHelper.firebaseAuthHelper
+                                              verificationkey.currentState!
+                                                  .save();
+                                              FirebaseAuthHelper
+                                                  .firebaseAuthHelper
                                                   .createUserWithEmailAndPassword(
-                                                  email!, password!);
+                                                      email!, password!);
                                               Get.snackbar(
                                                 'verification',
                                                 'verification code successfully sent in this email..',
-                                                snackPosition: SnackPosition.BOTTOM,
+                                                snackPosition:
+                                                    SnackPosition.BOTTOM,
                                               );
                                               setState(() {
                                                 intialIndex = 0;
@@ -1162,7 +1219,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver{
                                           child: const Text(
                                             "Register",
                                             style:
-                                            TextStyle(color: Colors.white),
+                                                TextStyle(color: Colors.white),
                                           ),
                                         ),
                                       ),

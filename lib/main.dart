@@ -2,6 +2,7 @@ import 'package:firebase_app/views/phone_otp_auth/login_screen.dart';
 import 'package:firebase_app/views/phone_otp_auth/otp_screen.dart';
 import 'package:firebase_app/views/screens/HomePage.dart';
 import 'package:firebase_app/views/screens/chat_page.dart';
+import 'package:firebase_app/views/screens/local_notification.dart';
 import 'package:firebase_app/views/screens/login_page.dart';
 import 'package:firebase_app/views/twitter/login_screen.dart';
 import 'package:firebase_app/views/twitter/register_screen.dart';
@@ -63,6 +64,9 @@ void main() async {
         GetPage(
           name: '/chat_page',
           page: () =>  const chat_page(),
+        ),GetPage(
+          name: '/Local_notification',
+          page: () =>  const Local_notification(),
         ),
       ],
     ),

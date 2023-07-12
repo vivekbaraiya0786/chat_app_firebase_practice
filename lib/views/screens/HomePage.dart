@@ -245,18 +245,50 @@ class _HomePageState extends State<HomePage> {
                           onPressed: () async{
                             await FireStoreHelper.fireStoreHelper.deleteUser(id: allDocs[index].id);
                           },
-                          icon: Icon(
+                          icon: const Icon(
                             Icons.delete,
                           ),
                         ),
                         IconButton(
-                          onPressed: () async{
-                            await FireStoreHelper.fireStoreHelper.updateUser(id: allDocs[index].id, email: 'Vivek Baraiya');
+                          onPressed: () async {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                String? newEmail;
+                                return AlertDialog(
+                                  title: Text('Update Email'),
+                                  content: TextField(
+                                    onChanged: (value) {
+                                      newEmail = value;
+                                    },
+                                    decoration: InputDecoration(
+                                      hintText: 'Enter new email',
+                                    ),
+                                  ),
+                                  actions: [
+                                    ElevatedButton(
+                                      child: Text('Cancel'),
+                                      onPressed: () {
+                                        Get.back();
+                                      },
+                                    ),
+                                    ElevatedButton(
+                                      child: Text('Update'),
+                                      onPressed: () async {
+                                        await FireStoreHelper.fireStoreHelper.updateUser(id: allDocs[index].id, email: newEmail!);
+                                        Get.back();
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
                           },
-                          icon: Icon(
+                          icon: const Icon(
                             Icons.edit,
                           ),
                         ),
+
                       ],
                     ),
                   );
@@ -378,3 +410,6 @@ class _HomePageState extends State<HomePage> {
 //     ],
 //   ),
 // );
+// if (allDocs[index].data()['uid'] == FirebaseAuth.instance.currentUser?.uid) {
+// return SizedBox.shrink();
+// }
