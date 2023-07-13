@@ -225,25 +225,41 @@ class _HomePageState extends State<HomePage> {
               List<QueryDocumentSnapshot<Map<String, dynamic>>> allDocs =
                   data.docs;
 
+              Set<String> uniqueSet = {};
+              List<QueryDocumentSnapshot<Map<String, dynamic>>> uniqueList =
+              allDocs.where((e) => uniqueSet.add(e.data()['uid'])).toList();
+
+              List<QueryDocumentSnapshot<Map<String, dynamic>>> documents = [];
+              for (int i = 0; i < uniqueList.length; i++) {
+                if (user.uid != uniqueList[i].data()['uid']) {
+                  documents.add(uniqueList[i]);
+                }
+              }
+
               return ListView.builder(
-                itemCount: allDocs.length,
+                itemCount: documents.length,
                 itemBuilder: (context, index) {
+                  // if (allDocs[index].data()['uid'] ==
+                  //     FirebaseAuth.instance.currentUser?.uid) {
+                  //   return SizedBox.shrink();
+                  // }
+
                   return ListTile(
                     onTap: () {
                       Navigator.of(context)
-                          .pushNamed("/chat_page", arguments: allDocs[index]);
+                          .pushNamed("/chat_page", arguments: documents[index]);
                     },
                     leading: Text("${index + 1}"),
-                    title: Text("${allDocs[index].data()['email']}"),
-                    subtitle: Text("${allDocs[index].data()['uid']}"),
+                    title: Text("${documents[index].data()['email']}"),
+                    subtitle: Text("${documents[index].data()['uid']}"),
                     trailing: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-
                         IconButton(
-                          onPressed: () async{
-                            await FireStoreHelper.fireStoreHelper.deleteUser(id: allDocs[index].id);
+                          onPressed: () async {
+                            await FireStoreHelper.fireStoreHelper
+                                .deleteUser(id: allDocs[index].id);
                           },
                           icon: const Icon(
                             Icons.delete,
@@ -275,7 +291,10 @@ class _HomePageState extends State<HomePage> {
                                     ElevatedButton(
                                       child: Text('Update'),
                                       onPressed: () async {
-                                        await FireStoreHelper.fireStoreHelper.updateUser(id: allDocs[index].id, email: newEmail!);
+                                        await FireStoreHelper.fireStoreHelper
+                                            .updateUser(
+                                                id: allDocs[index].id,
+                                                email: newEmail!);
                                         Get.back();
                                       },
                                     ),
@@ -288,7 +307,6 @@ class _HomePageState extends State<HomePage> {
                             Icons.edit,
                           ),
                         ),
-
                       ],
                     ),
                   );

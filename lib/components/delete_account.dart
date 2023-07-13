@@ -188,7 +188,7 @@ class _deleteAccountState extends State<deleteAccount> {
                                 onPressed: () {
                                   if (deleteAccountlKey.currentState!.validate()) {
                                     deleteAccountlKey.currentState!.save();
-                                    FirebaseAuthHelper.firebaseAuthHelper.deleteduseraccount(_Email!, _password!);
+                                    FirebaseAuthHelper.firebaseAuthHelper.deletedUserAccount(_Email!, _password!);
                                     // FirebaseAuthHelper.firebaseAuthHelper.signOut();
                                   }
                                 },

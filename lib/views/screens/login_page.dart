@@ -1,4 +1,5 @@
 import 'package:firebase_app/utils/firebase_auth_helper.dart';
+import 'package:firebase_app/utils/firebasestore_helper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -19,14 +20,17 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
+
+  String ID = 'user_id';
+  bool isVerificationSent = false;
+
   @override
   void initState() {
     super.initState();
-
+    getToken();
     FCMHelper.fcmHelper.fetchFCMToken();
     WidgetsBinding.instance.addObserver(this);
-
-
+    saveFCMToken();
 
     AndroidInitializationSettings androidInitializationSettings =
         const AndroidInitializationSettings("mipmap/ic_launcher");
@@ -49,6 +53,13 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     );
   }
 
+
+
+  Future<void> saveFCMToken() async {
+    String? fcmToken = await FCMHelper.fcmHelper.fetchFCMToken();
+    await FireStoreHelper.fireStoreHelper.getFCMTokenFromFirestore(ID);
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // TODO: implement didChangeAppLifecycleState
@@ -58,11 +69,17 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     print("===============");
   }
 
+
+
   @override
   void dispose() {
     // TODO: implement dispose
     super.dispose();
     WidgetsBinding.instance.removeObserver(this);
+  }
+  String? fcmToken;
+  getToken() async {
+    fcmToken = await FCMHelper.fcmHelper.fetchFCMToken();
   }
 
   final GlobalKey<FormState> signinKey = GlobalKey<FormState>();
@@ -349,7 +366,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                                   .validate()) {
                                                 signinKey.currentState!.save();
                                               }
-                                              LoginWithEmailPassword0();
+                                              LoginWithEmailPassword();
                                               // await FirebaseAuthHelper.firebaseAuthHelper.signInWithEmailAndPassword(email!, password!);
                                             }
                                           },
@@ -424,12 +441,12 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                   //with try catch
 
                                   onTap: () async {
-                                    Map<String, dynamic> data =
+                                    SignInResponse data =
                                         await FirebaseAuthHelper
                                             .firebaseAuthHelper
-                                            .signInWithGoogle();
+                                            .signInWithGoogle(fcmToken: fcmToken!);
 
-                                    if (data['user'] != null) {
+                                    if (data.user != null) {
                                       Get.snackbar(
                                         'Successfully',
                                         "Login Successfully",
@@ -438,11 +455,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                         duration: const Duration(seconds: 2),
                                       );
                                       Get.offAllNamed('/HomePage',
-                                          arguments: data['user']);
+                                          arguments: data.user);
                                     } else {
                                       Get.snackbar(
                                         'Failed',
-                                        data['msg'],
+                                        data.msg!,
                                         backgroundColor: Colors.red,
                                         snackPosition: SnackPosition.BOTTOM,
                                         duration: const Duration(seconds: 2),
@@ -484,24 +501,24 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                   //with try catch
 
                                   onTap: () async {
-                                    Map<String, dynamic> data =
+                                    SignInResponse data =
                                         await FirebaseAuthHelper
                                             .firebaseAuthHelper
                                             .signInAnonymously();
-                                    if (data['user'] != null) {
+                                    if (data.user != null) {
                                       Get.snackbar(
                                         'Successfully',
-                                        "Login Successfully",
+                                        "Login Successfully anonymous",
                                         backgroundColor: Colors.green,
                                         snackPosition: SnackPosition.BOTTOM,
                                         duration: const Duration(seconds: 2),
                                       );
                                       Get.toNamed("/HomePage",
-                                          arguments: data["user"]);
+                                          arguments: data.user);
                                     } else {
                                       Get.snackbar(
                                         'Failed',
-                                        data['msg'],
+                                        data.msg!,
                                         backgroundColor: Colors.red,
                                         snackPosition: SnackPosition.BOTTOM,
                                         duration: const Duration(seconds: 2),
@@ -529,28 +546,6 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                   ),
                                 ),
                               ],
-                            ),
-                            SizedBox(
-                              height: Get.height * 0.05,
-                            ),
-                            ElevatedButton(
-                              onPressed: () async{
-                               await LocalNotificationHelper.localNotificationHelper.showSimpleLocalPushNotification();
-                              },
-                              child: const Text(
-                                "Simple Notification",
-                              ),
-                            ),
-                            SizedBox(
-                              height: Get.height * 0.05,
-                            ),
-                            ElevatedButton(
-                              onPressed: () async{
-                                await LocalNotificationHelper.localNotificationHelper.showScheduledLocalPushNotification();
-                              },
-                              child: const Text(
-                                "Scheduled Notification",
-                              ),
                             ),
                           ],
                         ),
@@ -989,6 +984,9 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                               forgotPassWordkey.currentState!
                                                   .save();
                                               sendPasswordResetEmail();
+                                              setState(() {
+                                                intialIndex = 0;
+                                              });
                                             }
                                           },
                                           child: const Text(
@@ -1276,21 +1274,22 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     if (signupKey.currentState!.validate()) {
       (signupKey.currentState!.save());
 
-      Map<String, dynamic> data = await FirebaseAuthHelper.firebaseAuthHelper
-          .signupWithEmailPassword(email: Email!, password: Password!);
+      SignInResponse data = await FirebaseAuthHelper.firebaseAuthHelper
+          .signupWithEmailPassword(email: Email!, password: Password!,fcmToken: fcmToken!);
 
-      if (data['user'] != null) {
+      if (data.user != null) {
         Get.snackbar(
           'Successfully',
-          "Login Successfully",
+          "Successfully Login",
           backgroundColor: Colors.green,
           snackPosition: SnackPosition.BOTTOM,
           duration: const Duration(seconds: 2),
         );
+        // Get.toNamed("/signup_Verification");
       } else {
         Get.snackbar(
           'Failed',
-          data['msg'],
+          data.msg!,
           backgroundColor: Colors.red,
           snackPosition: SnackPosition.BOTTOM,
           duration: const Duration(seconds: 2),
@@ -1301,7 +1300,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
 //without try catch
 
-  // Future<void> LoginWithEmailPassword0() async {
+  // Future<void> LoginWithEmailPassword() async {
   //   if (signupKey.currentState!.validate()) {
   //     (signupKey.currentState!.save());
   //
@@ -1331,14 +1330,14 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
 //with try catch
 
-  Future<void> LoginWithEmailPassword0() async {
+  Future<void> LoginWithEmailPassword() async {
     if (signupKey.currentState!.validate()) {
       (signupKey.currentState!.save());
 
-      Map<String, dynamic> data = await FirebaseAuthHelper.firebaseAuthHelper
+      SignInResponse data = await FirebaseAuthHelper.firebaseAuthHelper
           .signinWithEmailPassword(email: Email!, password: Password!);
 
-      if (data['user'] != null) {
+      if (data.user != null) {
         Get.snackbar(
           'Successfully',
           "Login Successfully",
@@ -1346,11 +1345,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
           snackPosition: SnackPosition.BOTTOM,
           duration: const Duration(seconds: 2),
         );
-        Get.offNamed("/HomePage", arguments: data['user']);
+        Get.offNamed("/HomePage", arguments: data.user);
       } else {
         Get.snackbar(
           'Failed',
-          data['msg'],
+          data.msg!,
           backgroundColor: Colors.red,
           snackPosition: SnackPosition.BOTTOM,
           duration: const Duration(seconds: 2),

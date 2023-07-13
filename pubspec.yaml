@@ -47,7 +47,8 @@ dependencies:
   country_code_picker:
   pinput: ^2.2.31
   flutter_local_notifications: ^15.1.0+1
-  firebase_messaging: ^14.6.4
+  firebase_messaging: ^14.6.5
+  http: ^0.13.6
 
 
 dev_dependencies:

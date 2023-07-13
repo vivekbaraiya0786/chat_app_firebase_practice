@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'fcm_helper.dart';
+
 class FireStoreHelper {
   FireStoreHelper._();
 
@@ -85,4 +87,34 @@ class FireStoreHelper {
   Future<void> updateUser({required String id,required String email})async{
     await db.collection("users").doc(id).update({"email": email});
   }
+
+  Future<void> fcmToken({required String id}) async {
+
+    FCMHelper.fcmHelper.fetchFCMToken();
+
+    await db
+        .collection('users')
+        .doc(id)
+        .set({'fcmToken': FCMHelper.fcmHelper.fetchFCMToken(), 'createdAt': DateTime.now()});
+  }
+
+
+  Future<void> saveFCMTokenToFirestore(String id) async {
+    String? fcmToken = await FCMHelper.fcmHelper.fetchFCMToken();
+    await db.collection('users').doc(id).update({
+      'fcmToken': fcmToken,
+    });
+  }
+
+  Future<String?> getFCMTokenFromFirestore(String id) async {
+    DocumentSnapshot snapshot =
+    await db.collection('users').doc(id).get();
+    if (snapshot.exists) {
+      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+      return data['fcmToken'];
+    } else {
+      return null;
+    }
+  }
+
 }
